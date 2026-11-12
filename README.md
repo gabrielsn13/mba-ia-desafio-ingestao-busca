@@ -34,7 +34,6 @@ RESPOSTA: Não tenho informações necessárias para responder sua pergunta.
 
 - Split: `from langchain_text_splitters import RecursiveCharacterTextSplitter`
 - Embeddings (OpenAI): `from langchain_openai import OpenAIEmbeddings`
-- Embeddings (Gemini): `from langchain_google_genai import GoogleGenerativeAIEmbeddings`
 - PDF: `from langchain_community.document_loaders import PyPDFLoader`
 - Ingestão: `from langchain_postgres import PGVector`
 - Busca: `similarity_search_with_score(query, k=10)`
@@ -43,13 +42,6 @@ RESPOSTA: Não tenho informações necessárias para responder sua pergunta.
 
 - Crie uma API Key da OpenAI.
 - Você vai precisar de um modelo de embeddings e de um modelo de LLM para responder. Consulte a documentação oficial da OpenAI para ver os modelos disponíveis.
-
-## Gemini
-
-- Crie uma API Key da Google.
-- Você vai precisar de um modelo de embeddings e de um modelo de LLM para responder. Consulte a documentação oficial do Google para ver os modelos disponíveis.
-
-Os limites de requisições gratuitas dos modelos podem mudar com frequência. Para informações atualizadas, consulte a documentação oficial do Google.
 
 ## Escolha dos modelos
 
