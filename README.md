@@ -1,195 +1,126 @@
 # Ingestão e Busca Semântica com LangChain e Postgres
 
-## Objetivo
+Aplicação de linha de comando que responde perguntas com base no conteúdo de um PDF. O projeto usa Python, LangChain, OpenAI e PostgreSQL com pgvector.
 
-Você deve entregar um software capaz de:
+Na ingestão, o PDF é dividido em trechos de até 1000 caracteres, com overlap de 150, e seus embeddings são armazenados no banco. Para cada pergunta, a aplicação busca os 10 trechos mais relevantes e os envia como contexto à LLM. O prompt instrui o modelo a não usar informações externas; ainda assim, confira as respostas no documento.
 
-- Ingestão: Ler um arquivo PDF e salvar suas informações em um banco de dados PostgreSQL com extensão pgVector.
-- Busca: Permitir que o usuário faça perguntas via linha de comando (CLI) e receba respostas baseadas apenas no conteúdo do PDF.
+## Pré-requisitos
 
-## Exemplo no CLI
+- Python 3.12.
+- Docker e Docker Compose; no Windows, abra o Docker Desktop e aguarde sua inicialização.
+- Uma chave da [API OpenAI](https://platform.openai.com/) e créditos disponíveis. A assinatura do ChatGPT não inclui créditos da API. Consulte os [modelos disponíveis](https://platform.openai.com/docs/models) e seus preços antes de usar.
 
-Faça sua pergunta:
+Execute os comandos abaixo na **raiz do projeto**, onde ficam `docker-compose.yml` e `requirements.txt`.
 
-```
-PERGUNTA: Qual o faturamento da Empresa SuperTechIABrazil?
-RESPOSTA: O faturamento foi de 10 milhões de reais.
+## 1. Instalar as dependências
 
----
-
-Perguntas fora do contexto:
-
-PERGUNTA: Quantos clientes temos em 2024?
-RESPOSTA: Não tenho informações necessárias para responder sua pergunta.
-```
-
-## Tecnologias obrigatórias
-
-- Linguagem: Python
-- Framework: LangChain
-- Banco de dados: PostgreSQL + pgVector
-- Execução do banco de dados: Docker & Docker Compose (docker-compose fornecido no repositório de exemplo)
-
-## Pacotes recomendados
-
-- Split: `from langchain_text_splitters import RecursiveCharacterTextSplitter`
-- Embeddings (OpenAI): `from langchain_openai import OpenAIEmbeddings`
-- Embeddings (Gemini): `from langchain_google_genai import GoogleGenerativeAIEmbeddings`
-- PDF: `from langchain_community.document_loaders import PyPDFLoader`
-- Ingestão: `from langchain_postgres import PGVector`
-- Busca: `similarity_search_with_score(query, k=10)`
-
-## OpenAI
-
-- Crie uma API Key da OpenAI.
-- Você vai precisar de um modelo de embeddings e de um modelo de LLM para responder. Consulte a documentação oficial da OpenAI para ver os modelos disponíveis.
-
-## Gemini
-
-- Crie uma API Key da Google.
-- Você vai precisar de um modelo de embeddings e de um modelo de LLM para responder. Consulte a documentação oficial do Google para ver os modelos disponíveis.
-
-Os limites de requisições gratuitas dos modelos podem mudar com frequência. Para informações atualizadas, consulte a documentação oficial do Google.
-
-## Escolha dos modelos
-
-Este desafio não fixa modelos. Nomes e versões mudam com frequência e alguns são descontinuados, então faz parte do desafio consultar a documentação oficial do provedor que você escolher, ver quais modelos estão disponíveis no momento e selecionar os que atendem ao objetivo. Para o volume deste desafio, os modelos mais leves e baratos de cada provedor são suficientes.
-
-Atenção: modelos de embedding diferentes geram vetores com dimensões diferentes. A tabela de vetores é criada na primeira ingestão, já com a dimensão do modelo que você escolheu. Se você trocar de modelo de embeddings depois disso, a ingestão passa a falhar por incompatibilidade de dimensão. Nesse caso é responsabilidade sua apagar a collection existente (ou o volume do banco) e refazer a ingestão do zero com o novo modelo.
-
-## Requisitos
-
-### 1. Ingestão do PDF
-
-- O PDF deve ser dividido em chunks de 1000 caracteres com overlap de 150.
-- Cada chunk deve ser convertido em embedding.
-- Os vetores devem ser armazenados no banco de dados PostgreSQL com pgVector.
-
-### 2. Consulta via CLI
-
-Criar um script Python para simular um chat no terminal.
-
-Passos ao receber uma pergunta:
-
-- Vetorizar a pergunta.
-- Buscar os 10 resultados mais relevantes (k=10) no banco vetorial.
-- Montar o prompt e chamar a LLM.
-- Retornar a resposta ao usuário.
-
-Prompt a ser utilizado:
-
-```
-CONTEXTO:
-{resultados concatenados do banco de dados}
-
-REGRAS:
-- Responda somente com base no CONTEXTO.
-- Se a informação não estiver explicitamente no CONTEXTO, responda:
-  "Não tenho informações necessárias para responder sua pergunta."
-- Nunca invente ou use conhecimento externo.
-- Nunca produza opiniões ou interpretações além do que está escrito.
-
-EXEMPLOS DE PERGUNTAS FORA DO CONTEXTO:
-Pergunta: "Qual é a capital da França?"
-Resposta: "Não tenho informações necessárias para responder sua pergunta."
-
-Pergunta: "Quantos clientes temos em 2024?"
-Resposta: "Não tenho informações necessárias para responder sua pergunta."
-
-Pergunta: "Você acha isso bom ou ruim?"
-Resposta: "Não tenho informações necessárias para responder sua pergunta."
-
-PERGUNTA DO USUÁRIO:
-{pergunta do usuário}
-
-RESPONDA A "PERGUNTA DO USUÁRIO"
-```
-
-## Estrutura obrigatória do projeto
-
-Faça um fork do repositório para utilizar a estrutura abaixo: https://github.com/devfullcycle/mba-ia-desafio-ingestao-busca
-
-```
-├── docker-compose.yml
-├── requirements.txt      # Dependências
-├── .env.example          # Template das variáveis de ambiente
-├── src/
-│   ├── ingest.py         # Script de ingestão do PDF
-│   ├── search.py         # Script de busca
-│   ├── chat.py           # CLI para interação com usuário
-├── document.pdf          # PDF para ingestão
-└── README.md             # Instruções de execução
-```
-
-## VirtualEnv para Python
-
-Crie e ative um ambiente virtual antes de instalar dependências:
-
-```
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-## Configuração do ambiente
-
-O arquivo `.env` contém configurações locais e chaves de API, por isso não é versionado. Crie-o na raiz do projeto a partir do template:
-
-```
-cp .env.example .env
-```
-
-Edite o `.env` e configure:
-
-```
-OPENAI_API_KEY=sua-chave-da-openai
-OPENAI_EMBEDDING_MODEL=text-embedding-3-small
-OPENAI_CHAT_MODEL=nome-do-modelo-de-chat
-```
-
-Substitua `sua-chave-da-openai` pela sua chave e `nome-do-modelo-de-chat` por um modelo disponível na sua conta. Os valores de `DATABASE_URL`, `PG_VECTOR_COLLECTION_NAME` e `PDF_PATH` do template correspondem ao PostgreSQL local do Docker Compose e ao `document.pdf` na raiz. Se mudar usuário, senha, porta ou banco no `docker-compose.yml`, atualize também a `DATABASE_URL`.
-
-O `.env` é um arquivo oculto; use `ls -a` para confirmar que está na raiz. Não publique nem compartilhe esse arquivo ou suas chaves de API.
-
-### Windows PowerShell
-
-Instale Python 3.12 e inicie o Docker Desktop. Na raiz do projeto:
+No Windows PowerShell:
 
 ```powershell
 py -3.12 -m venv venv312
 .\venv312\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+No Linux ou macOS:
+
+```bash
+python3.12 -m venv venv
+source venv/bin/activate
+python -m pip install -r requirements.txt
+```
+
+## 2. Configurar o ambiente
+
+Crie o `.env` local a partir do template **apenas se ele ainda não existir**, para não sobrescrever suas configurações.
+
+No Windows PowerShell:
+
+```powershell
 Copy-Item .env.example .env
 ```
 
-Preencha a chave e o modelo de chat no `.env`, sem publicá-lo.
-O PostgreSQL fica disponível na porta local 5433.
+No Linux ou macOS:
+
+```bash
+cp .env.example .env
+```
+
+Edite o `.env` e preencha as variáveis:
+
+```env
+OPENAI_API_KEY=sua-chave-da-openai
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+OPENAI_CHAT_MODEL=nome-do-modelo-de-chat
+DATABASE_URL=postgresql+psycopg://postgres:postgres@localhost:5433/rag
+PG_VECTOR_COLLECTION_NAME=pdf_document
+PDF_PATH=document.pdf
+```
+
+Substitua a chave e escolha um modelo de chat disponível na sua conta. O Compose publica o PostgreSQL na porta **5433** da máquina; o `.env.example` pode conter `5432`, portanto confira e ajuste a `DATABASE_URL` no seu `.env`. Se alterar usuário, senha, porta ou banco no Compose, ajuste a conexão também.
+
+O `.env` é ignorado pelo Git: **não publique nem compartilhe sua chave**. As credenciais do PostgreSQL no exemplo são apenas para desenvolvimento local.
+
+## 3. Iniciar o banco
+
+```bash
+docker compose up -d
+docker compose ps
+```
+
+Aguarde o serviço `postgres` ficar `healthy`. O serviço `bootstrap_vector_ext` inicializa a extensão pgvector e pode aparecer como encerrado; confira sua conclusão com:
+
+```bash
+docker compose ps -a
+```
+
+O status esperado para ele é `Exited (0)`. O volume do Docker mantém os dados entre reinicializações.
+
+## 4. Ingerir o PDF
+
+No Windows PowerShell:
 
 ```powershell
-docker compose up -d
 .\venv312\Scripts\python.exe src\ingest.py
-.\venv312\Scripts\python.exe src\chat.py
 ```
 
-## Ordem de execução
+No Linux ou macOS, com o ambiente virtual ativado:
 
-1. Subir o banco de dados:
-
-```
-docker compose up -d
-```
-
-2. Executar ingestão do PDF:
-
-```
+```bash
 python src/ingest.py
 ```
 
-3. Rodar o chat:
+Ao concluir, o script informa a quantidade de trechos armazenados. Use o mesmo modelo de embeddings para ingestão e busca. Se trocar o modelo ou alterar o PDF, os vetores antigos podem permanecer ou ser incompatíveis; remova os dados antigos apropriados e reingira o documento. Remover o volume do Docker apaga todos os dados nele.
 
+## 5. Iniciar o chat
+
+No Windows PowerShell:
+
+```powershell
+.\venv312\Scripts\python.exe src\chat.py
 ```
+
+No Linux ou macOS, com o ambiente virtual ativado:
+
+```bash
 python src/chat.py
 ```
 
-## Entregável
+Digite uma pergunta e pressione Enter. Para encerrar, digite `sair`.
 
-Repositório público no GitHub contendo todo o código-fonte e README com instruções claras de execução do projeto.
+Teste uma pergunta cuja resposta esteja no PDF e outra fora do contexto. Para informações ausentes, o prompt solicita a resposta: **“Não tenho informações necessárias para responder sua pergunta.”** A resposta é gerada por uma LLM e não é garantida em todos os casos.
+
+## Estrutura
+
+```text
+├── docker-compose.yml
+├── requirements.txt
+├── .env.example
+├── document.pdf
+├── src/
+│   ├── ingest.py
+│   ├── search.py
+│   └── chat.py
+└── README.md
+```
+
+Projeto baseado no [desafio de ingestão e busca semântica](https://github.com/devfullcycle/mba-ia-desafio-ingestao-busca).
