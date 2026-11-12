@@ -151,6 +151,25 @@ Substitua `sua-chave-da-openai` pela sua chave e `nome-do-modelo-de-chat` por um
 
 O `.env` é um arquivo oculto; use `ls -a` para confirmar que está na raiz. Não publique nem compartilhe esse arquivo ou suas chaves de API.
 
+### Windows PowerShell
+
+Instale Python 3.12 e inicie o Docker Desktop. Na raiz do projeto:
+
+```powershell
+py -3.12 -m venv venv312
+.\venv312\Scripts\python.exe -m pip install -r requirements.txt
+Copy-Item .env.example .env
+```
+
+Preencha a chave e o modelo de chat no `.env`, sem publicá-lo.
+O PostgreSQL fica disponível na porta local 5433.
+
+```powershell
+docker compose up -d
+.\venv312\Scripts\python.exe src\ingest.py
+.\venv312\Scripts\python.exe src\chat.py
+```
+
 ## Ordem de execução
 
 1. Subir o banco de dados:
