@@ -139,7 +139,15 @@ O arquivo `.env` contém configurações locais e chaves de API, por isso não �
 cp .env.example .env
 ```
 
-Edite o `.env` e preencha `OPENAI_API_KEY`, `OPENAI_EMBEDDING_MODEL` e `OPENAI_CHAT_MODEL` com sua chave e modelos disponíveis na sua conta. Os valores de `DATABASE_URL`, `PG_VECTOR_COLLECTION_NAME` e `PDF_PATH` do template correspondem ao PostgreSQL local do Docker Compose e ao `document.pdf` na raiz. Se mudar usuário, senha, porta ou banco no `docker-compose.yml`, atualize também a `DATABASE_URL`.
+Edite o `.env` e configure:
+
+```
+OPENAI_API_KEY=sua-chave-da-openai
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+OPENAI_CHAT_MODEL=nome-do-modelo-de-chat
+```
+
+Substitua `sua-chave-da-openai` pela sua chave e `nome-do-modelo-de-chat` por um modelo disponível na sua conta. Os valores de `DATABASE_URL`, `PG_VECTOR_COLLECTION_NAME` e `PDF_PATH` do template correspondem ao PostgreSQL local do Docker Compose e ao `document.pdf` na raiz. Se mudar usuário, senha, porta ou banco no `docker-compose.yml`, atualize também a `DATABASE_URL`.
 
 O `.env` é um arquivo oculto; use `ls -a` para confirmar que está na raiz. Não publique nem compartilhe esse arquivo ou suas chaves de API.
 
